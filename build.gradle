@@ -35,8 +35,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-docker-compose'
     implementation 'org.postgresql:postgresql'
     implementation 'org.postgresql:r2dbc-postgresql'
-    implementation 'com.h2database:h2'
+    implementation 'com.h2database:h2:2.2.220'
     implementation 'io.r2dbc:r2dbc-h2'
+    implementation 'org.flywaydb:flyway-core'
     implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:${openapiStarterWebflux}"
     //implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.modulith:spring-modulith-starter-core'
@@ -51,5 +52,23 @@ tasks.named('test') {
 }
 
 bootRun {
-   jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+   jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"   
+}
+
+tasks.register("bootRunH2Dev") {
+    group = "application"
+    description = "Runs the Spring Boot application with the h2 database dev profile"
+    finalizedBy("bootRun")
+}
+
+
+tasks.register("bootRunDockerPostgreDev") {
+    group = "application"
+    description = "Runs the Spring Boot application with the postgre database docker container dev profile"
+    doFirst {
+        tasks.bootRun.configure {
+            systemProperty("spring.profiles.active", "postgre,docker-compose")
+        }
+    }
+    finalizedBy("bootRun")
 }
