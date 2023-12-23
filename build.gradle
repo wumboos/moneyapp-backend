@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-docker-compose'
     implementation 'org.postgresql:postgresql'
     implementation 'org.postgresql:r2dbc-postgresql'
-    implementation 'com.h2database:h2:2.2.220'
+    implementation 'com.h2database:h2'
     implementation 'io.r2dbc:r2dbc-h2'
     implementation 'org.flywaydb:flyway-core'
     implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:${openapiStarterWebflux}"
