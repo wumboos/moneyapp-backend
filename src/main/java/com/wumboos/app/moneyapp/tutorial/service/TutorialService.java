@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,7 @@ public class TutorialService {
 
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
-
+	
 	@Transactional
 	public Flux<Tutorial> findAll() {
 		return new TransactionalEventPublisher(this.eventPublisher)
@@ -38,11 +37,10 @@ public class TutorialService {
 	    .as(Flux::from).log().flatMap(s -> tutorialRepository.findAll());
 	}
 	
-	@Async
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@TransactionalEventListener
 	Mono<Void> on(TransactionCreatedEvent event) {
-		return Mono.just(event).log().then();
+		return Mono.just(event).doOnNext(e -> log.info("EVENT CONSUMED: "+e)).then();
 	}
 
 	public Flux<Tutorial> findByTitleContaining(String title) {
