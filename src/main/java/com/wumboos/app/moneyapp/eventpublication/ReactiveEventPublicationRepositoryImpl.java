@@ -1,11 +1,19 @@
 package com.wumboos.app.moneyapp.eventpublication;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.IntStream;
+
+import javax.swing.JApplet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.events.core.EventSerializer;
@@ -24,14 +32,14 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 			select p.*
 			from event_publication p
 			where
-				p.serializedEvent = :event
-				and p.listenerId = :listenerId
-				and p.completionDate is null
+				p.serialized_event = :event
+				and p.listener_id = :listenerId
+				and p.completion_date is null
 			""";
 
 	private static String INCOMPLETE = """
 			select p
-			from JpaEventPublication p
+			from event_publication p
 			where
 				p.completionDate is null
 			order by
@@ -40,7 +48,7 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 
 	private static String INCOMPLETE_BEFORE = """
 			select p
-			from JpaEventPublication p
+			from event_publication p
 			where
 				p.completionDate is null
 				and p.publicationDate < ?1
@@ -49,7 +57,7 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 			""";
 
 	private static final String MARK_COMPLETED_BY_EVENT_AND_LISTENER_ID = """
-			update JpaEventPublication p
+			update event_publication p
 			   set p.completionDate = ?3
 			 where p.serializedEvent = ?1
 			   and p.listenerId = ?2
@@ -57,29 +65,36 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 
 	private static final String DELETE = """
 			delete
-			from JpaEventPublication p
+			from event_publication p
 			where
 				p.id in ?1
 			""";
 
 	private static final String DELETE_COMPLETED = """
 			delete
-			from JpaEventPublication p
+			from event_publication p
 			where
 				p.completionDate is not null
 			""";
 
 	private static final String DELETE_COMPLETED_BEFORE = """
 			delete
-			from JpaEventPublication p
+			from event_publication p
 			where
 				p.completionDate < ?1
+			""";
+
+	private static final String INSERT = """
+			insert into event_publication (id,listener_id,event_type,serialized_event,publication_date,completion_date)
+			 values(
+			:id ,  :listenerId ,  :eventType , :serializedEvent , :publicationDate , :completionDate)
 			""";
 
 	private static final int DELETE_BATCH_SIZE = 100;
 
 	private final EventSerializer serializer;
-	
+	public static final Calendar tzUTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"));  
+
 	@Autowired
 	private DatabaseClient databaseClient;
 	
@@ -94,8 +109,14 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 
 	@Override
 	public Mono<TargetEventPublication> create(TargetEventPublication publication) {
-		// TODO Auto-generated method stub
-		return null;
+		return databaseClient.sql(INSERT)
+				.bind("id", publication.getIdentifier())
+				.bind("publicationDate", publication.getPublicationDate())
+				.bind("listenerId", publication.getTargetIdentifier().getValue())
+				.bind("serializedEvent", serializer.serialize(publication.getEvent()))
+				.bind("eventType", publication.getEvent().getClass().toString())
+				.bindNull("completionDate", Instant.class)
+				.then().log().map(e -> publication);
 	}
 
 	@Override
@@ -146,11 +167,12 @@ public class ReactiveEventPublicationRepositoryImpl implements ReactiveEventPubl
 				serializeEvent(domain.getEvent()), domain.getEvent().getClass());
 	}
 	
-	private Mono<EventPublication> findEntityBySerializedEventAndListenerIdAndCompletionDateNull( //
+	private Mono<EventPublication> findEntityBySerializedEventAndListenerIdAndCompletionDateNull(
 			Object event, PublicationTargetIdentifier listenerId) {
 
 		var serializedEvent = serializeEvent(event);
-		return databaseClient.sql(BY_EVENT_AND_LISTENER_ID).bind(0, event).bind(1, listenerId).fetch().all().bufferUntilChanged(r -> r.get("id")).flatMap(EventPublication::fromRows).singleOrEmpty();
+		return databaseClient.sql(BY_EVENT_AND_LISTENER_ID).bind(0, event).bind(1, listenerId).fetch().all()
+				.bufferUntilChanged(r -> r.get("id")).flatMap(EventPublication::fromRows).singleOrEmpty();
 
 	}
 

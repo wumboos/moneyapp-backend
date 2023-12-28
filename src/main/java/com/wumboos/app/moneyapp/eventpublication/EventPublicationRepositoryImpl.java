@@ -3,11 +3,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
+import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.events.core.EventPublicationRepository;
 import org.springframework.modulith.events.core.PublicationTargetIdentifier;
 import org.springframework.modulith.events.core.TargetEventPublication;
+
+import reactor.core.scheduler.Schedulers;
 
 public class EventPublicationRepositoryImpl implements EventPublicationRepository {
 	
@@ -20,7 +24,8 @@ public class EventPublicationRepositoryImpl implements EventPublicationRepositor
 	
 	@Override
 	public TargetEventPublication create(TargetEventPublication publication) {
-		return eventPublicationRepository.create(publication).block();
+		eventPublicationRepository.create(publication).subscribe();
+		return null;
 	}
 
 	@Override
