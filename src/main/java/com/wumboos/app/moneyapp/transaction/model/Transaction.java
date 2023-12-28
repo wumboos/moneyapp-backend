@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.springframework.data.annotation.Id;
 
+
 public class Transaction {
 	@Id
 	private int id;
