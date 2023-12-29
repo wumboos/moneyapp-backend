@@ -3,10 +3,11 @@ package com.wumboos.app.moneyapp.configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.WebFilter;
 
-@org.springframework.context.annotation.Configuration
+@Configuration
 @Component
 public class ControllerConfiguration {
 	Logger log = LoggerFactory.getLogger(ControllerConfiguration.class);
@@ -23,6 +24,8 @@ public class ControllerConfiguration {
 									.filter(stringListEntry -> !stringListEntry.getKey().equals("Authorization"))
 									.toList(),
 							exchange.getResponse().getStatusCode());
+					if(signal.getThrowable() != null)
+						log.error("Stack Trace: ",signal.getThrowable());
 				}
 			});
 		};

@@ -4,6 +4,6 @@ import java.util.UUID;
 
 import org.jmolecules.event.types.DomainEvent;
 
-public record TransactionCreatedEvent(UUID id){
+public record TransactionCreatedEvent(UUID id, String title, String description, boolean published){
 
 }

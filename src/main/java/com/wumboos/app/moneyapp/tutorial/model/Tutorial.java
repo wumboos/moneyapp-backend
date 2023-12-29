@@ -1,35 +1,42 @@
 package com.wumboos.app.moneyapp.tutorial.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import java.util.UUID;
 
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
 @Table
 public class Tutorial {
 
 	@Id
-	private int id;
+	private UUID id;
 
 	private String title;
 
 	private String description;
 
 	private boolean published;
-
 	public Tutorial() {
-
+	}
+	public Tutorial(UUID id) {
+		this.id = id;
 	}
 
-	public Tutorial(String title, String description, boolean published) {
+	public Tutorial(UUID id, String title, String description, boolean published) {
+		this.id = id;
 		this.title = title;
 		this.description = description;
 		this.published = published;
 	}
 
-	public int getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

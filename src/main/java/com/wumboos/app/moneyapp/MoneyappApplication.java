@@ -1,21 +1,21 @@
 package com.wumboos.app.moneyapp;
 
+import java.util.concurrent.Executors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import org.springframework.modulith.events.core.EventPublicationRepository;
-import org.springframework.modulith.events.core.EventSerializer;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
-import com.wumboos.app.moneyapp.eventpublication.EventPublicationRepositoryImpl;
-import com.wumboos.app.moneyapp.eventpublication.ReactiveEventPublicationRepository;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 
 @EnableWebFlux
-@EnableR2dbcRepositories
+@EnableJpaRepositories
 @SpringBootApplication
 public class MoneyappApplication {
 	@Autowired Environment env;
@@ -24,8 +24,9 @@ public class MoneyappApplication {
 		SpringApplication.run(MoneyappApplication.class, args);
 	}
 	
-	@Bean
-	EventPublicationRepository jpaEventPublicationRepository(ReactiveEventPublicationRepository reactiveEventPublicationRepository) {
-		return new EventPublicationRepositoryImpl(reactiveEventPublicationRepository);
-	}
+    @Bean
+    Scheduler jdbcScheduler(Environment env) {
+        return Schedulers.fromExecutor(Executors.newFixedThreadPool(env.getRequiredProperty("jdbc.connection.pool.size", Integer.class)));
+    }
+
 }
