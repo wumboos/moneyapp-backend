@@ -6,15 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.transaction.reactive.TransactionalEventPublisher;
 
-import com.wumboos.app.moneyapp.TransactionCreatedEvent;
 import com.wumboos.app.moneyapp.tutorial.model.Tutorial;
 import com.wumboos.app.moneyapp.tutorial.repository.TutorialRepository;
 
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -40,14 +35,14 @@ public class TutorialService {
 		return Flux.defer(() -> Flux.fromIterable(this.tutorialRepository.findAll())).subscribeOn(scheduler);
 	}
 
-	@Transactional(value = TxType.REQUIRES_NEW)
-	@TransactionalEventListener
-	Mono<Void> on(TransactionCreatedEvent event) {
-		return Mono
-				.fromCallable(() -> this.tutorialRepository
-						.save(new Tutorial(event.id(), event.title(), event.description(), event.published())))
-				.publishOn(scheduler).then();
-	}
+//	@Transactional(value = TxType.REQUIRES_NEW)
+//	@TransactionalEventListener
+//	Mono<Void> on(TransactionCreatedEvent event) {
+//		return Mono
+//				.fromCallable(() -> this.tutorialRepository
+//						.save(new Tutorial(event.id(), event.title(), event.description(), event.published())))
+//				.publishOn(scheduler).then();
+//	}
 
 	public Flux<Tutorial> findByTitleContaining(String title) {
 		return Flux.defer(() -> Flux.fromIterable(this.tutorialRepository.findByTitleContaining(title)))
@@ -58,13 +53,13 @@ public class TutorialService {
 		return Mono.fromCallable(() -> this.tutorialRepository.findById(id).orElseGet(null)).subscribeOn(scheduler);
 	}
 
-	@Transactional(value = TxType.REQUIRES_NEW)
-	public Mono<Void> save(Tutorial tutorial) {
-		this.eventPublisher.publishEvent(new TransactionCreatedEvent(UUID.randomUUID(), tutorial.getTitle(),
-				tutorial.getDescription(), tutorial.isPublished()));
-		log.info("masukkkkk");
-		return Mono.empty();
-	}
+//	@Transactional(value = TxType.REQUIRES_NEW)
+//	public Mono<Void> save(Tutorial tutorial) {
+//		this.eventPublisher.publishEvent(new TransactionCreatedEvent(UUID.randomUUID(), tutorial.getTitle(),
+//				tutorial.getDescription(), tutorial.isPublished()));
+//		log.info("masukkkkk");
+//		return Mono.empty();
+//	}
 //
 //	public Mono<Tutorial> update(int id, Tutorial tutorial) {
 //		return tutorialRepository.findById(id).map(Optional::of).defaultIfEmpty(Optional.empty())

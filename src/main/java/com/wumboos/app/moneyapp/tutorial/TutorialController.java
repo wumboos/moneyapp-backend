@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("${api.v1}/tutorials")
 public class TutorialController {
 	@Autowired
 	TutorialService tutorialService;
@@ -44,12 +44,12 @@ public class TutorialController {
 		return tutorialService.findById(UUID.fromString(id));
 	}
 
-	@PostMapping("/tutorials")
-	@ResponseStatus(HttpStatus.CREATED)
-	public Mono<Void> createTutorial(@RequestBody Tutorial tutorial) {
-		tutorial.setId(UUID.randomUUID());
-		return tutorialService.save(tutorial);
-	}
+//	@PostMapping("/tutorials")
+//	@ResponseStatus(HttpStatus.CREATED)
+//	public Mono<Void> createTutorial(@RequestBody Tutorial tutorial) {
+//		tutorial.setId(UUID.randomUUID());
+//		return tutorialService.save(tutorial);
+//	}
 //
 //	@PutMapping("/tutorials/{id}")
 //	@ResponseStatus(HttpStatus.OK)
