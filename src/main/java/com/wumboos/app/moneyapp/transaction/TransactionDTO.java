@@ -1,11 +1,6 @@
 package com.wumboos.app.moneyapp.transaction;
 
 import java.math.BigDecimal;
-import java.util.UUID;
-
-import org.springframework.data.annotation.Id;
-
-import jakarta.persistence.Table;
 
 public class TransactionDTO {
 
